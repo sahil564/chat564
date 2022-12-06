@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>realtine app </title>
+</head>
+<body>
+<h1> Group Name: {{groupname}}</h1>
+<textarea id="chat-log" cols="50" rows="15"></textarea><br>
+<input id="chat-message-input",type="text" size="50"><br>
+<input id="chat-message-submit" type="button" value="send">
+{{ groupname|json_script:"group-name" }}
+
+<script>
+    const groupname=JSON.parse(document.getElementById("group-name").textContent)
+    console.log("group Name....",groupname)
+
+    var ws = new WebSocket('ws://'+window.location.host + '/ws/jwc/' + groupname + '/')
+  
+    ws.onopen = function () {
+        console.log("websocket connection Open...")
+    };
+    ws.onmessage = function (event){
+        console.log("message recieved from server.....",event)
+        const data = JSON.parse(event.data)
+        console.log("data",data)
+        document.querySelector("#chat-log").value +=(data.message + "\n")
+    }
+
+
+
+
+
+    ws.onclose = function (event) {
+        console.error("chat socket closed unexpectedly")
+    };
+
+    document.getElementById("chat-message-submit").onclick =
+    function (event) {
+        const messageinputdom = document.getElementById("chat-message-input")
+        const message=messageinputdom.value
+        ws.send(JSON.stringify({
+            'msg':message
+        }))
+        messageinputdom.value="";
+    }
+
+</script>
+</body>
+</html>
